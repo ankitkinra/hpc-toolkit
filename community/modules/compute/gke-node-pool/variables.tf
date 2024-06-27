@@ -265,3 +265,27 @@ variable "service_account" {
     error_message = "service_account is deprecated and replaced with service_account_email and scopes."
   }
 }
+
+variable "enable_queing_support" {
+  description = "Enable queuing support"
+  type        = bool
+  default     = false
+}
+
+variable "enable_auto_repair" {
+  description = "Enable Auto repair"
+  type        = bool
+  default     = true
+}
+
+variable "reservation_affinity_type" {
+  description = "Type of reservation affinity"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = contains(["NO_RESERVATION", "ANY_RESERVATION"], var.reservation_affinity_type)
+    error_message = "Valid values for var: reservation_affinity_type are (NO_RESERVATION, ANY_RESERVATION)"
+  }
+
+}

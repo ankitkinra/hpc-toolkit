@@ -56,7 +56,7 @@ resource "google_container_node_pool" "node_pool" {
   }
 
   management {
-    auto_repair  = true
+    auto_repair  = var.enable_auto_repair
     auto_upgrade = var.auto_upgrade
   }
 
@@ -150,11 +150,19 @@ resource "google_container_node_pool" "node_pool" {
         "net.ipv4.tcp_wmem" = "4096 16384 16777216"
       }
     }
+
+    reservation_affinity {
+      consume_reservation_type = var.reservation_affinity_type
+    }
   }
 
   timeouts {
     create = var.timeout_create
     update = var.timeout_update
+  }
+
+  queued_provisioning {
+    enabled = var.enable_queing_support
   }
 
   lifecycle {
