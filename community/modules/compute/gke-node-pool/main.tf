@@ -32,6 +32,7 @@ locals {
 
   autoscale_set   = var.autoscaling_total_min_nodes != 0 || var.autoscaling_total_max_nodes != 1000
   static_node_set = var.static_node_count != null
+  node_pool_name  = var.name == null ? var.machine_type : var.name
 }
 
 data "google_compute_default_service_account" "default_sa" {
@@ -41,7 +42,7 @@ data "google_compute_default_service_account" "default_sa" {
 resource "google_container_node_pool" "node_pool" {
   provider = google-beta
 
-  name           = var.name == null ? var.machine_type : var.name
+  name           = local.node_pool_name
   cluster        = var.cluster_id
   node_locations = var.zones
 
@@ -151,8 +152,11 @@ resource "google_container_node_pool" "node_pool" {
       }
     }
 
-    reservation_affinity {
-      consume_reservation_type = var.reservation_affinity_type
+    dynamic "reservation_affinity" {
+      for_each = var.reservation_affinity_type != null ? tolist([1]) : []
+      content {
+        consume_reservation_type = var.reservation_affinity_type
+      }
     }
   }
 
@@ -162,7 +166,7 @@ resource "google_container_node_pool" "node_pool" {
   }
 
   queued_provisioning {
-    enabled = var.enable_queing_support
+    enabled = var.enable_queueing_support
   }
 
   lifecycle {
@@ -176,6 +180,11 @@ resource "google_container_node_pool" "node_pool" {
     precondition {
       condition     = !(var.local_ssd_count_ephemeral_storage > 0 && var.local_ssd_count_nvme_block > 0)
       error_message = "Only one of local_ssd_count_ephemeral_storage or local_ssd_count_nvme_block can be set to a non-zero value."
+    }
+
+    precondition {
+      condition     = !var.enable_queueing_support || try(contains(["NO_RESERVATION", "ANY_RESERVATION"], var.reservation_affinity_type), false)
+      error_message = format("node_pool: %s : Valid values for reservation_affinity_type are (NO_RESERVATION, ANY_RESERVATION) when enabling queueing support", local.node_pool_name)
     }
   }
 }

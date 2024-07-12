@@ -55,6 +55,8 @@ deployment_groups:
     use: [gke_cluster]
     settings:
       disk_type: pd-balanced
+      name: g2-nodes1
+      kubernetes_labels: {"cloud.google.com/gke-accelerator": "g2-nodes1"}
       machine_type: g2-standard-4
       enable_queing_support: true
       enable_auto_repair: false

@@ -266,7 +266,7 @@ variable "service_account" {
   }
 }
 
-variable "enable_queing_support" {
+variable "enable_queueing_support" {
   description = "Enable queuing support"
   type        = bool
   default     = false
@@ -282,10 +282,4 @@ variable "reservation_affinity_type" {
   description = "Type of reservation affinity"
   type        = string
   default     = null
-
-  validation {
-    condition     = contains(["NO_RESERVATION", "ANY_RESERVATION"], var.reservation_affinity_type)
-    error_message = "Valid values for var: reservation_affinity_type are (NO_RESERVATION, ANY_RESERVATION)"
-  }
-
 }
